@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Resume Screening Results</title>
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #3a7bd5, #00d2ff); /* Professional gradient */
+            color: black;
+            overflow: hidden;
+        }
+
+        /* Heading */
+        h1 {
+            margin: 20px 0;
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Table Styling */
+        table {
+            width: 90%;
+            margin: 20px auto 0 auto; /* Positioned at the top */
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            opacity: 0; /* Hidden by default for animation */
+            transform: translateY(50px); /* Starting position for animation */
+            animation: slideIn 1s ease-out forwards; /* Animation */
+        }
+
+        table thead {
+            background-color: #007bff;
+            color: white;
+        }
+
+        table th, table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            font-weight: bold;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Buttons Styling */
+        .btn {
+            padding: 8px 15px;
+            font-size: 14px;
+            text-decoration: none;
+            border-radius: 5px;
+            color: white;
+            display: inline-block;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-delete {
+            background-color: #e74c3c;
+            margin-right: 10px;
+        }
+
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-update {
+            background-color: #3498db;
+        }
+
+        .btn-update:hover {
+            background-color: #2980b9;
+        }
+
+        /* Footer Section */
+        .footer {
+            margin-top: 20px;
+            padding: 15px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .footer .button {
+            padding: 12px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .footer .button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Animation Keyframes */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Resume Screening Results</h1>
+
+    <!-- Results Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Filename</th>
+                <th>Skills</th>
+                <th>Score</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resume in resumes %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ resume[1] }}</td>
+                <td>{{ resume[2] }}</td>
+                <td>{{ resume[3] }}</td>
+                <td>
+                    <div style="display: flex; justify-content: center; gap: 3px;">
+                        <form action="/delete/{{ resume[0] }}" method="POST">
+                            <button class="btn btn-delete" type="submit">Delete</button>
+                        </form>
+                        <a href="/update/{{ resume[0] }}" class="btn btn-update">Update</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Footer Section -->
+    <div class="footer">
+        <a href="{{ url_for('index') }}" class="button">Enter Another Input</a>
+    </div>   
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Screener</title>
+    <link rel="stylesheet" href="static/style.css">
+    <style>
+        /* Styling for the Job Description Textarea */
+        #job_description {
+            width: 100%;
+            height: 150px;
+            padding: 0.5rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            resize: none;
+            background: #f9f9f9;
+            color: #333;
+        }
+
+        /* Styling for Labels */
+        form label {
+            margin-top: 1rem;
+            display: block;
+            font-weight: bold;
+        }
+
+        /* Styling for Submit Button */
+        form button {
+            margin-top: 1rem;
+            padding: 0.7rem;
+            font-size: 1rem;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        form button:hover {
+            background-color: #45a049;
+        }
+
+        /* Highlight for Invalid Fields */
+        .invalid {
+            border: 1px solid red;
+        }
+
+        /* Suggestions Dropdown */
+        .suggestions {
+            border: 1px solid #ccc;
+            background-color: #fff;
+            max-height: 150px;
+            overflow-y: auto;
+            position: absolute;
+            width: 100%;
+            z-index: 10;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        .suggestion-item.active {
+            background-color: #e0e0e0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Automated Resume Screener</h1>
+        <form id="resume-form" action="/upload" method="post" enctype="multipart/form-data">
+            <label for="job_description">Job Description:</label>
+            <div style="position: relative;">
+                <textarea id="job_description" name="job_description" placeholder="Enter the job description here..." required></textarea>
+                <div id="suggestions" class="suggestions" style="display: none;"></div>
+            </div>
+    
+            <label for="resumes">Upload Resumes (PDF only):</label>
+            <input id="resumes" type="file" name="resumes" multiple required>
+    
+            <button id="submit-btn" type="submit">Submit</button>
+        </form>
+    </div>    
+
+    <script>
+        const submitButton = document.getElementById('submit-btn');
+        const jobDescriptionTextarea = document.getElementById('job_description');
+        const resumesInput = document.getElementById('resumes');
+        const form = document.getElementById('resume-form');
+        const suggestionsContainer = document.getElementById('suggestions');
+
+        // Function to load suggestions from localStorage
+        const loadSuggestions = () => {
+            return JSON.parse(localStorage.getItem('jobDescriptions')) || [];
+        };
+
+        // Function to save a new job description to localStorage
+        const saveJobDescription = (description) => {
+            const storedDescriptions = loadSuggestions();
+            if (!storedDescriptions.includes(description)) {
+                storedDescriptions.push(description);
+                localStorage.setItem('jobDescriptions', JSON.stringify(storedDescriptions));
+            }
+        };
+
+        // Function to validate inputs
+        const areInputsValid = () => {
+            let isValid = true;
+
+            if (jobDescriptionTextarea.value.trim() === "") {
+                jobDescriptionTextarea.classList.add('invalid');
+                isValid = false;
+            } else {
+                jobDescriptionTextarea.classList.remove('invalid');
+            }
+
+            if (resumesInput.files.length === 0 || !Array.from(resumesInput.files).every(file => file.type === 'application/pdf')) {
+                resumesInput.classList.add('invalid');
+                isValid = false;
+            } else {
+                resumesInput.classList.remove('invalid');
+            }
+
+            return isValid;
+        };
+
+        // Function to make the submit button move randomly
+        const moveButton = () => {
+            const maxX = window.innerWidth - submitButton.offsetWidth; // Account for button width
+            const maxY = window.innerHeight - submitButton.offsetHeight; // Account for button height
+        
+            const randomX = Math.random() * maxX; // Generate random position
+            const randomY = Math.random() * maxY;
+        
+            submitButton.style.position = 'fixed'; // Use fixed positioning for unrestricted movement
+            submitButton.style.left = `${randomX}px`;
+            submitButton.style.top = `${randomY}px`;
+        };        
+
+        // Prevent form submission if inputs are empty and save the job description
+        form.addEventListener('submit', (event) => {
+            if (!areInputsValid()) {
+                event.preventDefault(); // Prevent submission
+                alert('Please provide a job description and upload PDF resumes before submitting!');
+                moveButton(); // Move button on invalid inputs
+            } else {
+                saveJobDescription(jobDescriptionTextarea.value.trim());
+            }
+        });        
+
+        // Event listener for textarea input
+        jobDescriptionTextarea.addEventListener('input', (event) => {
+            const query = event.target.value.trim();
+            showSuggestions(query);
+        });
+
+        // Function to show suggestions below the textarea
+        const showSuggestions = (query) => {
+            const suggestions = loadSuggestions();
+            const filteredSuggestions = suggestions.filter(desc => desc.toLowerCase().includes(query.toLowerCase()));
+
+            suggestionsContainer.innerHTML = '';
+
+            if (filteredSuggestions.length > 0 && query) {
+                filteredSuggestions.forEach((suggestion) => {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.className = 'suggestion-item';
+                    suggestionItem.textContent = suggestion;
+
+                    suggestionItem.addEventListener('click', () => {
+                        jobDescriptionTextarea.value = suggestion;
+                        suggestionsContainer.style.display = 'none';
+                    });
+
+                    suggestionsContainer.appendChild(suggestionItem);
+                });
+                suggestionsContainer.style.display = 'block';
+            } else {
+                suggestionsContainer.style.display = 'none';
+            }
+        };
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!suggestionsContainer.contains(event.target) && event.target !== jobDescriptionTextarea) {
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+
+        // Load stored suggestions on page load
+        window.onload = () => {
+            const suggestions = loadSuggestions();
+            if (suggestions.length > 0) {
+                showSuggestions('');
+            }
+        };
+    </script>
+</body>
+</html>

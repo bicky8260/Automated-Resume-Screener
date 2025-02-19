@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Update Resume</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Form Container */
+        .container {
+            background-color: white;
+            width: 400px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: fadeIn 0.7s ease-in-out;
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        /* Input Fields */
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        input:disabled {
+            background-color: #f2f2f2;
+            cursor: not-allowed;
+        }
+
+        /* Button Styling */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-update {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-update:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-back {
+            background-color: #e74c3c;
+            color: white;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .btn-back:hover {
+            background-color: #c0392b;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Update Resume</h1>
+        <form action="/update/{{ resume[0] }}" method="post">
+            <label for="filename">Filename:</label>
+            <input type="text" id="filename" value="{{ resume[1] }}" disabled>
+
+            <label for="job_description">Job Description:</label>
+            <textarea name="job_description" rows="3">{{ resume[4] }}</textarea> <!-- Editable -->
+
+            <label for="skills">Skills (comma-separated):</label>
+            <textarea name="skills" rows="5">{{ resume[2] }}</textarea>
+
+            <label for="score">Calculated Score:</label>
+            <input type="number" id="score" value="{{ resume[3] }}" disabled>
+
+            <button type="submit" class="btn btn-update">Update</button>
+        </form>
+
+        <a href="/results" class="btn btn-back">Back to Results</a>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const jobDescriptionInput = document.querySelector("textarea[name='job_description']");
+            const skillsInput = document.querySelector("textarea[name='skills']");
+            const scoreField = document.getElementById("score");
+
+            function updateScore() {
+                const jobDescription = jobDescriptionInput.value.split(",").map(s => s.trim().toLowerCase());
+                const skills = skillsInput.value.split(",").map(s => s.trim().toLowerCase());
+
+                let keywordMatch = skills.filter(skill => jobDescription.includes(skill)).length;
+                let keywordScore = (jobDescription.length > 0) ? (keywordMatch / jobDescription.length) * 100 : 0;
+
+                scoreField.value = keywordScore.toFixed(2);
+            }
+
+            jobDescriptionInput.addEventListener("input", updateScore);
+            skillsInput.addEventListener("input", updateScore);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+Flask
+pdfminer.six
+sentence-transformers
+Html
+Css
+Javascript
+Bootstrap
+Jquery
